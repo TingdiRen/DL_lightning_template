@@ -1,0 +1,43 @@
+seed_everything: 3704
+
+model:
+  model_name: "demo_model"
+  loss_name: "gradient_loss"
+  init_args:
+    network:
+      hid: 3
+      hid2: 128
+    optim:
+      lr: 1e-4
+      lr_scheduler: "step"
+      lr_decay_steps: 20
+      lr_decay_rate: 0.5
+      lr_decay_min_lr: 1e-5
+      weight_decay: 1e-5
+
+data:
+  dataset_name: "paired_data"
+  init_args:
+    data_dir: "dataset\/UIEB"
+    batch_size: 1
+    num_workers: 2
+
+trainer:
+  max_epochs: 800
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: "epoch"
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: "psnr"
+        mode: "max"
+        patience: 10
+        min_delta: 0.01
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        monitor: "psnr"
+        filename: "best-{epoch:02d}_{psnr:.2f}_{ssim:.3f}"
+        save_top_k: 1
+        mode: "max"
+        save_last: True
